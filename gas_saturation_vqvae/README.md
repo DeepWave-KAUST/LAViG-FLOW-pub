@@ -33,7 +33,7 @@ Minimal guide for preparing the CO₂ gas saturation dataset, training the VQ-VA
 
 ### 3. Train the VQ-VAE Model
 - Update `co2.yaml` if you need to point to custom dataset paths or change hyperparameters.
-- Before running `training_vqvae.py`, download `vgg.pth` [here]() and place it at `/.../LAViG-FLOW/gas_saturation_vqvae/trained_models/vgg.pth`; the LPIPS loss in `lpips.py` requires this file to initialize.
+- Before running `training_vqvae.py`, download `vgg.pth` [here](https://drive.google.com/drive/u/0/folders/1GIlXzK6zPh7Y1MAeLJYNwfOS_DnkdB1-) and place it at `/.../LAViG-FLOW/gas_saturation_vqvae/trained_models/vgg.pth`; the LPIPS loss in `lpips.py` requires this file to initialize.
 - Launch training (Accelerate handles single/multi-GPU automatically):
   ```
   python training_vqvae.py --config co2.yaml
@@ -43,7 +43,7 @@ Minimal guide for preparing the CO₂ gas saturation dataset, training the VQ-VA
   - `--resume path/to/checkpoint.pt` restarts from a checkpoint.
 
 #### 3.1 Pretrained Checkpoints (Optional)
-- If you only need inference, download the pre-trained assets [here]() instead of training from scratch.
+- If you only need inference, download the pre-trained assets [here](https://drive.google.com/drive/u/0/folders/1GIlXzK6zPh7Y1MAeLJYNwfOS_DnkdB1-) instead of training from scratch.
 - Create `/.../LAViG-FLOW/gas_saturation_vqvae/trained_models/` if it is missing, then drop the files below:
   - `/.../LAViG-FLOW/gas_saturation_vqvae/trained_models/vqvae_model.pth` → VQ-VAE checkpoint consumed by the reconstruction scripts.
   - `/.../LAViG-FLOW/gas_saturation_vqvae/trained_models/vgg.pth` → LPIPS perceptual metric weights required by `lpips.py`.
