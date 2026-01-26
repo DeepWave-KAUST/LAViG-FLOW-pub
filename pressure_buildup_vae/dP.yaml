@@ -1,0 +1,74 @@
+###############################################################################
+# Pressure Build-Up VAE Configuration (2025)
+#
+# Author: Vittoria De Pellegrini
+# Affiliation: PhD Student, King Abdullah University of Science and Technology
+#
+# Configuration file to perform VAE training
+###############################################################################
+
+# Set experiment seed for reproducibility
+seed: 2025
+
+# Accelerator setup for Hugging Face Accelerate runtimes
+accelerator:
+  split_batches: true
+  gradient_accumulation_steps: 1
+  mixed_precision: null
+
+# Dataset locations and loader parameters
+data:
+  train:
+    target: /.../LAViG-FLOW/pressure_buildup_vae/dP_data/train_dP_target.pt
+    stats: /.../LAViG-FLOW/pressure_buildup_vae/dP_data/training_dataset_pressure_buildup/dP_train_min_max.pt
+  loader:
+    batch_size: 4
+    shuffle: true
+    drop_last: true
+    num_workers: 4
+    pin_memory: true
+    persistent_workers: true
+
+# Model architecture and VAE hyperparameters
+model:
+  im_channels: 1
+  autoencoder:
+    down_channels : [32, 64, 128, 128]
+    mid_channels : [128, 128]
+    down_sample : [True, True, True]
+    attns : [False, False, False]
+    num_down_layers: 1
+    num_mid_layers: 1
+    num_up_layers: 1
+    norm_channels: 16
+    num_heads: 4
+    z_channels: 24 
+
+# Loss function weighting
+loss:
+  weights:
+    kl_weight: 1.1472028717539988e-06  
+
+# Optimizer configuration
+optimizer:
+  autoencoder:
+    lr: 1e-4
+    betas: [0.5, 0.999]
+
+# Training schedule and logging options
+training:
+  num_epochs: 300
+  early_stopping_patience: null
+  save_loss_curves: true
+  tensorboard: true
+  auto_resume: true
+
+# Output directories and reporting filenames
+output:
+  model_dir: /.../LAViG-FLOW/pressure_buildup_vae/trained_models
+  checkpoints_dir: /.../LAViG-FLOW/pressure_buildup_vae/trained_models/checkpoints
+  results_dir: /.../LAViG-FLOW/pressure_buildup_vae/results
+  summary_filename: vae_training_summary.txt
+  loss_curve_filename: vae_loss_curves.png
+  tensorboard_subdir: tensorboard_logs
+  save_config_copy: true 

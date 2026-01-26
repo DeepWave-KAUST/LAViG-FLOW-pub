@@ -1,0 +1,82 @@
+###############################################################################
+# CO₂ Gas Saturation VQ-VAE Configuration (2025)
+#
+# Author: Vittoria De Pellegrini
+# Affiliation: PhD Student, King Abdullah University of Science and Technology
+#
+# Configuration file to perform VQ-VAE training
+###############################################################################
+
+# Set experiment seed for reproducibility
+seed: 2025
+
+# Accelerator setup for Hugging Face Accelerate runtimes
+accelerator:
+  split_batches: true
+  gradient_accumulation_steps: 1
+  mixed_precision: null
+
+# Dataset locations and loader parameters
+data:
+  train:
+    target: /.../LAViG-FLOW/gas_saturation_vqvae/co2_data/train_sg_target.pt
+    stats: /.../LAViG-FLOW/gas_saturation_vqvae/co2_data/training_dataset_gas_saturation/sg_train_min_max.pt
+  loader:
+    batch_size: 4
+    shuffle: true
+    drop_last: true
+    num_workers: 4
+    pin_memory: true
+    persistent_workers: true
+
+# Model architecture and VQ-VAE hyperparameters
+model:
+  im_channels: 1
+  autoencoder:
+    down_channels: [256, 384, 512, 1024]
+    mid_channels: [1024, 1024]
+    down_sample: [true, true, true]
+    attns: [false, false, false]
+    num_down_layers: 2
+    num_mid_layers: 2
+    num_up_layers: 2
+    norm_channels: 32
+    num_heads: 4
+    z_channels: 2
+    codebook_size: 16384
+
+# Loss function weighting
+loss:
+  weights:
+    recon: 1.0
+    codebook: 0.15
+    commitment: 0.2
+    lpips: 1.0
+
+# Optimizer configuration
+optimizer:
+  generator:
+    lr: 1.0e-5
+    betas: [0.5, 0.999]
+
+# Training schedule and logging options
+training:
+  num_epochs: 60
+  early_stopping_patience: null
+  save_loss_curves: true
+  tensorboard: true
+  auto_resume: true
+
+# LPIPS perceptual loss toggle
+lpips:
+  enable: true
+
+# Output directories and reporting filenames
+output:
+  model_dir: /.../LAViG-FLOW/gas_saturation_vqvae/trained_models
+  checkpoints_dir: /.../LAViG-FLOW/gas_saturation_vqvae/trained_models/checkpoints
+  results_dir: /.../LAViG-FLOW/gas_saturation_vqvae/results
+  summary_filename: vqvae_training_summary.txt
+  loss_curve_filename: vqvae_loss_curves.png
+  tensorboard_subdir: tensorboard_logs
+  save_config_copy: true

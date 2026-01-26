@@ -1,0 +1,121 @@
+###############################################################################
+# Joint Autoregressive Training Config (CO₂ Gas + Pressure) (2025)
+#
+# Author: Vittoria De Pellegrini
+# Affiliation: PhD Student, King Abdullah University of Science and Technology
+#
+# Description: Master configuration for DiTV joint training/fine-tuning with
+#              autoregressive windows. Provides dataset mappings, Diffusion /
+#              RF scheduler settings, autoencoder checkpoints, and inference
+#              defaults for the combined workflow.
+###############################################################################
+
+# Dataset Parameters
+dataset_params:
+  num_images_train: 0
+  frame_height: 96
+  frame_width: 200
+  frame_channels: 1
+  num_frames: 17
+  autoregressive:
+    context_frames: 15
+    predict_frames: 2
+    window_stride: 1
+  stats_paths:
+    gas: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/co2_data/training_dataset_gas_saturation/sg_train_min_max.pt
+    pressure: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/dP_data/training_dataset_pressure_buildup/dP_train_min_max.pt
+  file_map:
+    train:
+      gas: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/co2_data/train_sg_target.pt
+      pressure: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/dP_data/train_dP_target.pt
+    val:
+      gas: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/co2_data/val_sg_target.pt
+      pressure: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/dP_data/val_dP_target.pt
+    test:
+      gas: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/co2_data/test_sg_target.pt
+      pressure: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/dP_data/test_dP_target.pt
+
+# Diffusion Parameters
+diffusion_params:
+  num_timesteps: 1000
+
+# Rectified flow scheduler parameters
+rf_params:
+  num_sampling_steps: 30
+  sample_method: 'uniform'
+  use_discrete_timesteps: false
+  use_timestep_transform: false
+  transform_scale: 1.0
+  pa_vdm: false
+  noise_pattern: 'linear'
+  linear_variance_scale: 0.1
+  linear_shift_scale: 0.3
+  latent_chunk_size: 1
+  keep_x0: false
+  variable_length: false
+
+# DiT video diffusion Parameters
+ditv_params:
+  patch_size: 2
+  num_layers: 8
+  hidden_size: 512
+  num_heads: 8
+  head_dim: 64
+  timestep_emb_dim: 256
+
+autoencoder_params:
+  gas:
+    type: vqvae
+    z_channels: 2
+    codebook_size: 16384
+    down_channels: [256, 384, 512, 1024]
+    mid_channels: [1024, 1024]
+    down_sample: [true, true, true]
+    attns: [false, false, false]
+    norm_channels: 32
+    num_heads: 4
+    num_down_layers: 2
+    num_mid_layers: 2
+    num_up_layers: 2
+    ckpt_path: /.../LAViG-FLOW/gas_saturation_vqvae/trained_models/vqvae_model.pth
+  pressure:
+    type: vae
+    z_channels: 24
+    down_channels: [32, 64, 128, 128]
+    mid_channels: [128, 128]
+    down_sample: [true, true, true]
+    attns: [false, false, false]
+    norm_channels: 16
+    num_heads: 4
+    num_down_layers: 1
+    num_mid_layers: 1
+    num_up_layers: 1
+    ckpt_path: /.../LAViG-FLOW/pressure_buildup_vae/trained_models/vae_model.pth
+
+# Training Parameters
+train_params:
+  seed: 1111
+  ditv_batch_size: 2
+  ditv_epochs: 400
+  ditv_lr: 3e-5
+  ditv_acc_steps: 1
+  num_samples: 8
+  base_ditv_ckpt: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/trained_models/joint_dit.pth
+  ditv_ckpt_name: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/trained_models/joint_dit_autoreg.pth
+  ditv_ckpt_complete_name: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/trained_models/joint_dit_autoreg_full.pth
+  log_dir: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/tensorboard_logs_autoreg
+  loss_dir: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/loss_plots_autoreg
+  eval_test_each_epoch: true
+
+# Autoregressive fine-tuning specifics
+autoregressive_params:
+  mask_context_loss: true
+  detach_context_from_grad: true
+  noise_context: true
+
+# Inference Parameters
+infer_params:
+  # Total frames per sample = context_frames + predict_frames + (num_chunks-1)*predict_frames
+  # Total frames = 15 + 2 + (num_chunks-1)*2 → with num_chunks=4 we get 23 frames
+  output_dir: /.../LAViG-FLOW/gas_saturation_pressure_buildup_ditv/unconditional_generation_autoreg
+  num_chunks: 4

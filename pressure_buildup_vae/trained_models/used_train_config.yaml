@@ -1,0 +1,64 @@
+accelerator:
+  gradient_accumulation_steps: 1
+  mixed_precision: null
+  split_batches: true
+data:
+  loader:
+    batch_size: 4
+    drop_last: true
+    num_workers: 4
+    persistent_workers: true
+    pin_memory: true
+    shuffle: true
+  train:
+    stats: /.../LAViG-FLOW/pressure_buildup_vae/dP_data/training_dataset_pressure_buildup/dP_train_min_max.pt
+    target: /.../LAViG-FLOW/pressure_buildup_vae/dP_data/train_dP_target.pt
+loss:
+  weights:
+    kl_weight: 1.1472028717539988e-06
+model:
+  autoencoder:
+    attns:
+    - false
+    - false
+    - false
+    down_channels:
+    - 32
+    - 64
+    - 128
+    - 128
+    down_sample:
+    - true
+    - true
+    - true
+    mid_channels:
+    - 128
+    - 128
+    norm_channels: 16
+    num_down_layers: 1
+    num_heads: 4
+    num_mid_layers: 1
+    num_up_layers: 1
+    z_channels: 24
+  im_channels: 1
+optimizer:
+  autoencoder:
+    betas:
+    - 0.5
+    - 0.999
+    lr: 1e-4
+output:
+  checkpoints_dir: /.../LAViG-FLOW/pressure_buildup_vae/trained_models/checkpoints
+  loss_curve_filename: vae_loss_curves.png
+  model_dir: /.../LAViG-FLOW/pressure_buildup_vae/trained_models
+  results_dir: /.../LAViG-FLOW/pressure_buildup_vae/results
+  save_config_copy: true
+  summary_filename: vae_training_summary.txt
+  tensorboard_subdir: tensorboard_logs
+seed: 2025
+training:
+  auto_resume: true
+  early_stopping_patience: null
+  num_epochs: 300
+  save_loss_curves: true
+  tensorboard: true
