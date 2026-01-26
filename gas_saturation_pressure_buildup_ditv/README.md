@@ -213,7 +213,7 @@ python gas_saturation_pressure_buildup_ditv/evaluate_autoregressive.py \
 - HPC workflow: use `/.../slurm_files/evaluate_autoregressive.slurm` and set `CHUNK_LIST`, `MAX_SAMPLES`, `BATCH_SIZE`, etc. before `sbatch`. The template assumes one chunk per submission (e.g. `CHUNK_LIST=1`), and it writes each run to `${JOINT_ROOT}/metrics/chunk${CHUNK_LIST}_autoreg.json` unless you override `OUTPUT_JSON`.
 
 #### 6.3 Perceptual + video-quality metrics (SSIM / PSNR / LPIPS / FVD)
-- Before running the metrics script, download the StyleGAN-V I3D detector (`i3d_torchscript.pt`) from [here]() and place it under `gas_saturation_pressure_buildup_ditv/metric_detectors/` (create the folder if it does not exist). The script looks for that file to compute LPIPS/FVD; without it, PSNR/SSIM/LPIPS/FVD will fail.
+- Before running the metrics script, download the StyleGAN-V I3D detector (`i3d_torchscript.pt`) from [here](https://drive.google.com/drive/u/0/folders/1GIlXzK6zPh7Y1MAeLJYNwfOS_DnkdB1-) and place it under `gas_saturation_pressure_buildup_ditv/metric_detectors/` (create the folder if it does not exist). The script looks for that file to compute LPIPS/FVD; without it, PSNR/SSIM/LPIPS/FVD will fail.
 
 ```bash
 export STYLEGAN_V_SRC=/abs/path/to/stylegan-v-main/src  # optional if you keep the vendored folder
