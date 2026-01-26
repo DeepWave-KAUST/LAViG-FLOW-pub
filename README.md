@@ -65,4 +65,12 @@ We deeply appreciate the upstream projects and datasets that make LAViG-FLOW pos
 ## :alien: :flying_saucer: :cow2: Cite us 
 
 ```bibtex
-De Pellegrini V., & Alkhalifah T. (2025). **LAViG-FLOW: Latent Autoregressive Video Generation for Fluid Flow Simulations**.
+@misc{depellegrini2026lavigflowlatentautoregressivevideo,
+      title={LAViG-FLOW: Latent Autoregressive Video Generation for Fluid Flow Simulations}, 
+      author={Vittoria De Pellegrini and Tariq Alkhalifah},
+      year={2026},
+      eprint={2601.13190},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2601.13190}, 
+}
