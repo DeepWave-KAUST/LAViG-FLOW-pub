@@ -57,7 +57,7 @@ The figures land under `gas_saturation_pressure_buildup_ditv/samples_*`.
 
 ### 4. Multi-GPU DiTV Training
 Training happens in **two explicit phases**: (1) unconditional joint modelling so the DiTV learns a shared latent of CO₂ + ΔP trajectories, followed by (2) autoregressive fine-tuning that teaches the network to roll forward in time chunk-by-chunk. Both stages reuse the same entrypoint (`multi_gpu_train_ditv.py`) but different YAMLs and checkpoint knobs.  
-*Shortcut:* If you only need inference/evaluation, download the pretrained checkpoints (`joint_dit.pth`, `joint_dit_autoreg.pth`,`vqvae_model.pth`,`vae_model.pth`) from [here](). Place them under `gas_saturation_vqvae/trained_models/`, `pressure_buildup_vae/trained_models/`, and `gas_saturation_pressure_buildup_ditv/trained_models/` as referenced in the YAMLs, then skip to Section 5.
+*Shortcut:* If you only need inference/evaluation, download the pretrained checkpoints (`joint_dit.pth`, `joint_dit_autoreg.pth`,`vqvae_model.pth`,`vae_model.pth`) from [here](https://drive.google.com/drive/u/0/folders/1GIlXzK6zPh7Y1MAeLJYNwfOS_DnkdB1-). Place them under `gas_saturation_vqvae/trained_models/`, `pressure_buildup_vae/trained_models/`, and `gas_saturation_pressure_buildup_ditv/trained_models/` as referenced in the YAMLs, then skip to Section 5.
 
 #### 4.1 Phase 1 — Unconditional joint training (`joint.yaml`)
 - Objective: train for 1,000 epochs (`train_params.ditv_epochs`) with full-length clips so the model stores paired pressure/saturation distributions without autoregressive masking.
