@@ -42,7 +42,7 @@ Minimal guide for preparing the Pressure Build-Up dataset, training the VAE, and
   - `--resume path/to/checkpoint.pt` restarts from a checkpoint.
 
 #### 3.1 Pretrained Checkpoints (Optional)
-- If you only need inference, download the pre-trained assets [here]() instead of training from scratch.
+- If you only need inference, download the pre-trained assets [here](https://drive.google.com/drive/u/0/folders/1GIlXzK6zPh7Y1MAeLJYNwfOS_DnkdB1-) instead of training from scratch.
 - Create `/.../LAViG-FLOW/pressure_buildup_vae/trained_models/` at the project root if it is missing, then drop the files below:
   - `/.../LAViG-FLOW/pressure_buildup_vae/trained_models/vae_model.pth` → VAE checkpoint consumed by the reconstruction scripts.
 - After placing these files you can jump straight to the reconstruction step.
