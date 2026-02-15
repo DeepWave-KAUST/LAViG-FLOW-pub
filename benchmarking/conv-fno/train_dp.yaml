@@ -1,0 +1,41 @@
+###############################################################################
+# Benchmarking Configuration (2026)
+#
+# Author: Vittoria De Pellegrini
+# Affiliation: PhD Student, King Abdullah University of Science and Technology
+#
+# Description: conv-fno/train_dp.yaml
+#              Configuration file for benchmarking model training, evaluation,
+#              timing, and result aggregation workflows.
+###############################################################################
+
+# conv-FNO pressure buildup training config
+seed: 0
+n_frames: 17
+
+data_dir: /.../LAViG-FLOW/pressure_buildup_vae
+save_dir: saved_models
+
+epochs: 140
+batch_size: 4
+learning_rate: 1.0e-3
+scheduler_step: 4
+scheduler_gamma: 0.85
+weight_decay: 1.0e-4
+save_every: 2
+
+mode1: 10
+mode2: 10
+mode3: 10
+width: 36
+
+# device: cuda:0
+
+wandb:
+  enable: true
+  project: benchmarking
+  # entity:
+  # name:
+  # tags: []
+  # group:
+  group: conv-fno
