@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-#SBATCH --job-name=convfno-train-pressure
+#SBATCH --job-name=convfno-train-gas
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --ntasks-per-node=2
@@ -10,8 +10,8 @@
 #SBATCH --mem=300GB
 #SBATCH --time=48:00:00
 #SBATCH --partition=batch
-#SBATCH --output=/.../LAViG-FLOW/benchmarking/conv-fno/logs/train_ConvFNO_dp.%j.out
-#SBATCH --error=/.../LAViG-FLOW/benchmarking/conv-fno/logs/train_ConvFNO_dp.%j.err
+#SBATCH --output=/.../LAViG-FLOW/benchmarking/conv-fno/logs/train_ConvFNO_sg.%j.out
+#SBATCH --error=/.../LAViG-FLOW/benchmarking/conv-fno/logs/train_ConvFNO_sg.%j.err
 set -euo pipefail
 
 HOST_PROJECT_ROOT=${PROJECT_ROOT:-/...}
@@ -31,4 +31,4 @@ srun accelerate launch \
   --main_process_port ${MASTER_PORT} \
   --num_processes ${SLURM_NTASKS} \
   --num_machines ${SLURM_JOB_NUM_NODES} \
-  train_ConvFNO_dp.py --config train_dp.yaml
+  train_ConvFNO_sg.py --config train_sg.yaml
