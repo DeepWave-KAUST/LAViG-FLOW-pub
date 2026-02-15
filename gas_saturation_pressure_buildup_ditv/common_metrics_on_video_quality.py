@@ -459,6 +459,124 @@ def calculate_fvd(
     return _calculate_frechet_distance(mu_pred, sigma_pred, mu_real, sigma_real)
 
 
+def _extract_fvd_features(
+    tensor: torch.Tensor,
+    detector: torch.nn.Module,
+    detector_kwargs: Dict[str, object],
+    batch_size: int,
+    device: torch.device,
+) -> np.ndarray:
+    """Return detector features [N, D] for prepared [N, C, T, H, W] videos."""
+    features_list: List[np.ndarray] = []
+    total = int(tensor.shape[0])
+    if total == 0:
+        raise ValueError("No samples provided for FVD feature extraction.")
+
+    for start in range(0, total, batch_size):
+        stop = min(start + batch_size, total)
+        batch = tensor[start:stop]
+        batch = _ensure_min_temporal_frames(batch)
+        batch = _ensure_three_channels(batch)
+        with torch.no_grad():
+            features = detector(batch.to(device), **detector_kwargs)
+        if isinstance(features, (list, tuple)):
+            if not features:
+                raise ValueError("Detector returned an empty sequence.")
+            features = features[0]
+        if not isinstance(features, torch.Tensor):
+            raise TypeError("Detector output is not a tensor.")
+        features = features.view(features.shape[0], -1)
+        features_list.append(features.detach().to(dtype=torch.float64, device="cpu").numpy())
+
+    return np.concatenate(features_list, axis=0)
+
+
+def _feature_mean_cov(features: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    if features.ndim != 2 or features.shape[0] == 0:
+        raise ValueError(f"Expected non-empty 2D feature matrix, got {features.shape}.")
+    mean = features.mean(axis=0)
+    cov = np.cov(features, rowvar=False, bias=True)
+    return mean, cov
+
+
+def calculate_fvd_with_bootstrap(
+    targets: torch.Tensor,
+    predictions: torch.Tensor,
+    device: torch.device,
+    stylegan_src: Optional[str],
+    batch_size: int,
+    target_frames: Optional[int] = None,
+    bootstrap_repeats: int = 8,
+    bootstrap_sample_size: Optional[int] = None,
+    bootstrap_seed: int = 12345,
+) -> Tuple[float, float]:
+    """
+    Return (fvd_mean, fvd_std) where std is estimated with bootstrap resampling.
+
+    Bootstrap is done in feature space to avoid repeated detector inference.
+    """
+    if targets.shape != predictions.shape:
+        raise ValueError("Predictions and targets must have the same shape for FVD computation.")
+
+    metric_utils = _import_stylegan_metric_utils(stylegan_src)
+    detector_resource = _resolve_detector_resource(FVD_DETECTOR_FILENAME, FVD_DETECTOR_URL)
+    detector = metric_utils.get_feature_detector(
+        url=detector_resource,
+        device=device,
+        num_gpus=1,
+        rank=0,
+        verbose=False,
+    )
+    detector_kwargs = {"rescale": True, "resize": True, "return_features": True}
+
+    preds_unit = to_unit_interval(predictions.clone()).cpu()
+    gts_unit = to_unit_interval(targets.clone()).cpu()
+    pred_videos = _prepare_videos_for_fvd(preds_unit, target_frames)
+    target_videos = _prepare_videos_for_fvd(gts_unit, target_frames)
+
+    if pred_videos.shape[2] != target_videos.shape[2]:
+        raise ValueError(
+            "Predictions and targets must share the same number of frames after alignment for FVD."
+        )
+
+    pred_features = _extract_fvd_features(pred_videos, detector, detector_kwargs, batch_size, device)
+    target_features = _extract_fvd_features(target_videos, detector, detector_kwargs, batch_size, device)
+
+    mu_pred, sigma_pred = _feature_mean_cov(pred_features)
+    mu_real, sigma_real = _feature_mean_cov(target_features)
+    fvd_mean = float(_calculate_frechet_distance(mu_pred, sigma_pred, mu_real, sigma_real))
+
+    if int(bootstrap_repeats) <= 1:
+        return fvd_mean, 0.0
+
+    n_pred = pred_features.shape[0]
+    n_real = target_features.shape[0]
+    sample_size = min(n_pred, n_real)
+    if bootstrap_sample_size is not None:
+        sample_size = min(sample_size, max(2, int(bootstrap_sample_size)))
+    if sample_size < 2:
+        return fvd_mean, 0.0
+
+    rng = np.random.default_rng(int(bootstrap_seed))
+    boot_values: List[float] = []
+    for _ in range(int(bootstrap_repeats)):
+        idx_pred = rng.integers(0, n_pred, size=sample_size)
+        idx_real = rng.integers(0, n_real, size=sample_size)
+        try:
+            mu_b_pred, sigma_b_pred = _feature_mean_cov(pred_features[idx_pred])
+            mu_b_real, sigma_b_real = _feature_mean_cov(target_features[idx_real])
+            val = float(_calculate_frechet_distance(mu_b_pred, sigma_b_pred, mu_b_real, sigma_b_real))
+            if math.isfinite(val):
+                boot_values.append(val)
+        except Exception:
+            continue
+
+    if len(boot_values) < 2:
+        return fvd_mean, 0.0
+    fvd_std = float(np.std(np.asarray(boot_values, dtype=np.float64), ddof=0))
+    return fvd_mean, fvd_std
+
+
 def to_unit_interval(tensor: torch.Tensor) -> torch.Tensor:
     """Map [-1, 1] latent-space frames to [0, 1] for metric functions."""
     return tensor.add(1.0).mul_(0.5).clamp_(0.0, 1.0)
@@ -473,6 +591,9 @@ def compute_metrics(
     fvd_batch_size: int = 16,
     compute_fvd: bool = True,
     fvd_target_frames: Optional[int] = None,
+    fvd_bootstrap_repeats: int = 8,
+    fvd_bootstrap_sample_size: Optional[int] = None,
+    fvd_bootstrap_seed: int = 12345,
 ) -> Dict[str, float]:
     """
     predictions / targets: [B, T, C, H, W] in [-1, 1]
@@ -504,16 +625,30 @@ def compute_metrics(
     }
 
     if compute_fvd:
-        fvd_value = calculate_fvd(
-            targets=targets,
-            predictions=predictions,
-            device=lpips_device,
-            stylegan_src=stylegan_src,
-            batch_size=fvd_batch_size,
-            target_frames=fvd_target_frames,
-        )
+        if int(fvd_bootstrap_repeats) > 1:
+            fvd_value, fvd_std = calculate_fvd_with_bootstrap(
+                targets=targets,
+                predictions=predictions,
+                device=lpips_device,
+                stylegan_src=stylegan_src,
+                batch_size=fvd_batch_size,
+                target_frames=fvd_target_frames,
+                bootstrap_repeats=fvd_bootstrap_repeats,
+                bootstrap_sample_size=fvd_bootstrap_sample_size,
+                bootstrap_seed=fvd_bootstrap_seed,
+            )
+        else:
+            fvd_value = calculate_fvd(
+                targets=targets,
+                predictions=predictions,
+                device=lpips_device,
+                stylegan_src=stylegan_src,
+                batch_size=fvd_batch_size,
+                target_frames=fvd_target_frames,
+            )
+            fvd_std = 0.0
         metrics["fvd"] = fvd_value
-        metrics["fvd_std"] = 0.0
+        metrics["fvd_std"] = fvd_std
 
     return metrics
 
@@ -534,6 +669,9 @@ def evaluate_for_metrics(
     fvd_batch_size: int,
     compute_fvd: bool,
     fvd_target_frames: Optional[int],
+    fvd_bootstrap_repeats: int,
+    fvd_bootstrap_sample_size: Optional[int],
+    fvd_bootstrap_seed: int,
 ) -> Dict[int, Dict[str, Dict[str, Dict[str, float]]]]:
     dataset_cfg = config["dataset_params"]
     autoreg_cfg = dataset_cfg["autoregressive"]
@@ -650,6 +788,7 @@ def evaluate_for_metrics(
         for modality in ("gas", "pressure"):
             predictions = torch.cat(preds_storage[modality], dim=0)
             targets = torch.cat(gts_storage[modality], dim=0)
+            modality_seed_offset = 0 if modality == "gas" else 1
             adv_metrics = compute_metrics(
                 predictions=predictions,
                 targets=targets,
@@ -658,6 +797,9 @@ def evaluate_for_metrics(
                 fvd_batch_size=fvd_batch_size,
                 compute_fvd=compute_fvd,
                 fvd_target_frames=fvd_target_frames,
+                fvd_bootstrap_repeats=fvd_bootstrap_repeats,
+                fvd_bootstrap_sample_size=fvd_bootstrap_sample_size,
+                fvd_bootstrap_seed=fvd_bootstrap_seed + chunk_count * 1000 + modality_seed_offset,
             )
             chunk_summary.setdefault(modality, {})
             chunk_summary[modality]["ssim"] = {"mean": adv_metrics["ssim"], "std": adv_metrics["ssim_std"]}
@@ -748,6 +890,24 @@ def parse_args() -> argparse.Namespace:
         help="Temporally resample videos to this many frames before computing FVD (default: keep original length).",
     )
     parser.add_argument(
+        "--fvd-bootstrap-repeats",
+        type=int,
+        default=8,
+        help="Number of bootstrap resamples for FVD std (<=1 disables bootstrap std).",
+    )
+    parser.add_argument(
+        "--fvd-bootstrap-sample-size",
+        type=int,
+        default=None,
+        help="Optional bootstrap sample size (default: min(#pred, #target)).",
+    )
+    parser.add_argument(
+        "--fvd-bootstrap-seed",
+        type=int,
+        default=12345,
+        help="Base RNG seed for FVD bootstrap resampling.",
+    )
+    parser.add_argument(
         "--output-json",
         type=str,
         default=None,
@@ -792,6 +952,9 @@ def main() -> None:
         fvd_batch_size=args.fvd_batch_size,
         compute_fvd=not args.skip_fvd,
         fvd_target_frames=args.fvd_num_frames,
+        fvd_bootstrap_repeats=args.fvd_bootstrap_repeats,
+        fvd_bootstrap_sample_size=args.fvd_bootstrap_sample_size,
+        fvd_bootstrap_seed=args.fvd_bootstrap_seed,
     )
 
     for chunk in sorted(results.keys()):
