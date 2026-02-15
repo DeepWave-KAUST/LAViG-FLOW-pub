@@ -17,7 +17,7 @@ This repository is organized as follows:
 
 ## :space_invader: :robot: Getting started 
 > [!IMPORTANT]
->To ensure reproducibility of the results, we suggest using the `environment.yml` file when creating an environment.
+>To ensure reproducibility of the results, we suggest using the `environment.yaml` file when creating an environment.
 >
 >If you download the repository as a ZIP from GitHub, your local folder may be named `LAViG-FLOW-pub-main`.  
 >**Please rename the folder to `LAViG-FLOW` before running scripts**, since project paths assume this repository name.
