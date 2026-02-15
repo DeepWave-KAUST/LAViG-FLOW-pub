@@ -4,13 +4,11 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --constrain=v100
-#SBATCH --gres=gpu:1
 #SBATCH --mem=260GB
-#SBATCH --time=00:10:00
+#SBATCH --time=48:00:00
 #SBATCH --partition=batch
-#SBATCH --output=/.../LAViG-FLOW/benchmarking/benchmark_comparison/logs/timing.%j.out
-#SBATCH --error=/.../LAViG-FLOW/benchmarking/benchmark_comparison/logs/timing.%j.err
+#SBATCH --output=/.../LAViG-FLOW/benchmarking/benchmark_comparison/logs/timing_4cpu.%j.out
+#SBATCH --error=/.../LAViG-FLOW/benchmarking/benchmark_comparison/logs/timing_4cpu.%j.err
 set -euo pipefail
 
 HOST_PROJECT_ROOT=${PROJECT_ROOT:-/...}
@@ -25,7 +23,7 @@ source activate lavig-flow
 export PYTHONPATH="${REPO_ROOT}:${BENCH_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 
 CONFIG_PATH=${CONFIG_PATH:-${COMPARE_ROOT}/config.yaml}
-OUTPUT_JSON=${OUTPUT_JSON:-${COMPARE_ROOT}/results/timing.json}
+OUTPUT_JSON=${OUTPUT_JSON:-${COMPARE_ROOT}/results/timing_4cpu.json}
 DEVICE_OVERRIDE=${DEVICE_OVERRIDE:-}
 
 CMD=(python ${COMPARE_ROOT}/timing_baselines.py
