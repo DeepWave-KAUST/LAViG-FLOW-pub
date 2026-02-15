@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 
-#SBATCH --job-name=fourier-mionet-train-pressure
+#SBATCH --job-name=fourier-mionet-train-gas
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
@@ -11,8 +11,8 @@
 #SBATCH --mem=300GB
 #SBATCH --time=48:00:00
 #SBATCH --partition=batch
-#SBATCH --output=/.../LAViG-FLOW/benchmarking/Fourier_MIONet/logs/train_Fourier_MIONet_dp.%j.out
-#SBATCH --error=/.../LAViG-FLOW/benchmarking/Fourier_MIONet/logs/train_Fourier_MIONet_dp.%j.err
+#SBATCH --output=/.../LAViG-FLOW/benchmarking/Fourier_MIONet/logs/train_Fourier_MIONet_sg.%j.out
+#SBATCH --error=/.../LAViG-FLOW/benchmarking/Fourier_MIONet/logs/train_Fourier_MIONet_sg.%j.err
 set -euo pipefail
 
 HOST_PROJECT_ROOT=${PROJECT_ROOT:-/...}
@@ -28,4 +28,4 @@ export MASTER_ADDR=$(hostname)
 export MASTER_PORT=$((12000 + RANDOM % 20000))
 export NCCL_DEBUG=WARN
 
-srun accelerate launch   --main_process_port ${MASTER_PORT}   --num_processes ${SLURM_NTASKS}   --num_machines ${SLURM_JOB_NUM_NODES}   train_Fourier_MIONet_dp.py --config train_dp.yaml
+srun accelerate launch   --main_process_port ${MASTER_PORT}   --num_processes ${SLURM_NTASKS}   --num_machines ${SLURM_JOB_NUM_NODES}   train_Fourier_MIONet_sg.py --config train_sg.yaml
