@@ -1,0 +1,51 @@
+###############################################################################
+# Benchmarking Configuration (2026)
+#
+# Author: Vittoria De Pellegrini
+# Affiliation: PhD Student, King Abdullah University of Science and Technology
+#
+# Description: vanilla_MIONet/train_sg.yaml
+#              Configuration file for benchmarking model training, evaluation,
+#              timing, and result aggregation workflows.
+###############################################################################
+
+# vanilla MIONet gas saturation training config
+seed: 0
+n_frames: 17
+ntrain: 4500
+ntest: 500
+
+# Folder containing co2_data/training_dataset_gas_saturation and co2_data/validation_dataset_gas_saturation
+# Update this path for your environment
+
+data_dir: /.../LAViG-FLOW/gas_saturation_vqvae
+save_dir: saved_models
+
+optimizer: adam
+learning_rate: 2.0e-4
+decay_step: 4500
+decay_gamma: 0.9
+loss_weights: [1.0, 0.5]
+
+#n_epochs:150
+iterations: 112500
+batch_size: 6
+timestep_batch_size: 8
+training_time_size: 17
+
+display_every: 750
+save_every: 2250
+save_better_only: false
+
+# Evaluation
+# Number of samples to evaluate (use <= ntest)
+eval_samples: 10
+
+wandb:
+  group: vanilla_mionet
+  enable: true
+  project: benchmarking
+  # entity:
+  # name:
+  # tags: []
+  # group:
