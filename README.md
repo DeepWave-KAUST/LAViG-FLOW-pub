@@ -11,6 +11,7 @@ This repository is organized as follows:
 * :open_file_folder: **gas_saturation_vqvae**: set of python scripts to build the VQ-VAE latent space for the CO₂ Gas Saturation field;
 * :open_file_folder: **pressure_buildup_vae**: set of python scripts to build the VAE latent space for the Pressure Build-Up field;
 * :open_file_folder: **gas_saturation_pressure_buildup_ditv**: set of python scripts to train latent autoregressive video diffusion transformer (DiTV);
+* :open_file_folder: **benchmarking**: baseline model folders and evaluation/timing scripts for benchmark comparison (Conv-FNO, FNO, U-FNO, vanilla MIONet, Fourier-MIONet);
 * :open_file_folder: **stylegan-v-main**: StyleGAN-V metric utilities to evaluate video-generation quality (FVD/LPIPS, etc.). Source: https://github.com/universome/stylegan-v;
 * :open_file_folder: **dockers**: Dockerfile for Docker users who need to build the docker image.
 
