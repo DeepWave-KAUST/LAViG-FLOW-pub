@@ -19,6 +19,15 @@ This repository is organized as follows:
 > [!IMPORTANT]
 >To ensure reproducibility of the results, we suggest using the `environment.yml` file when creating an environment.
 >
+>If you download the repository as a ZIP from GitHub, your local folder may be named `LAViG-FLOW-pub-main`.  
+>**Please rename the folder to `LAViG-FLOW` before running scripts**, since project paths assume this repository name.
+>
+>Example:
+>```bash
+>mv LAViG-FLOW-pub-main LAViG-FLOW
+>cd LAViG-FLOW
+>```
+>
 >Simply run:
 >```
 >./install_env.sh
