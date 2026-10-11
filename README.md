@@ -75,12 +75,18 @@ We deeply appreciate the upstream projects and datasets that make LAViG-FLOW pos
 ## :alien: :flying_saucer: :cow2: Cite us 
 
 ```bibtex
-@misc{depellegrini2026lavigflowlatentautoregressivevideo,
-      title={LAViG-FLOW: Latent Autoregressive Video Generation for Fluid Flow Simulations}, 
-      author={Vittoria De Pellegrini and Tariq Alkhalifah},
-      year={2026},
-      eprint={2601.13190},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2601.13190}, 
+@article{https://doi.org/10.1029/2026JH001294,
+author = {De Pellegrini, V. and Alkhalifah, T.},
+title = {LAViG-FLOW: Latent Autoregressive Video Generation for Fluid Flow Simulations},
+journal = {Journal of Geophysical Research: Machine Learning and Computation},
+volume = {3},
+number = {5},
+pages = {e2026JH001294},
+keywords = {latent video diffusion transformers, progressive autoregression, rectified flow sampling, reservoir fluid flow},
+doi = {https://doi.org/10.1029/2026JH001294},
+url = {https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2026JH001294},
+eprint = {https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2026JH001294},
+note = {e2026JH001294 2026JH001294},
+abstract = {Abstract Modeling and forecasting subsurface multiphase fluid flow fields underpin applications ranging from geological CO2 sequestration (GCS) operations to geothermal production. This is essential for ensuring both operational performance and long-term safety. While high fidelity multiphase simulators are widely used for this purpose, they become prohibitively expensive once many forward runs are required for inversion purposes and to quantify uncertainty. To tackle this challenge, we propose LAViG-FLOW, a latent autoregressive video generation diffusion framework that explicitly learns the coupled evolution of saturation and pressure fields. Each state variable is compressed by a dedicated 2D autoencoder, and a Video Diffusion Transformer (VDiT) models their coupled distribution across time. We first train the model on a given time horizon to learn their coupled relationship and then fine-tune it autoregressively so it can extrapolate beyond the observed time window. Evaluated on an open-source GCS data set, the probabilistic LAViG-FLOW framework generates multiple plausible saturation and pressure fields that stay consistent across time while running two orders of magnitude faster than the deterministic traditional numerical solver ECLIPSE on a single NVIDIA Tesla V100 graphics processing unit (GPU).},
+year = {2026}
 }
